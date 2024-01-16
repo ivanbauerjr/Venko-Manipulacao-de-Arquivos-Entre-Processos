@@ -1,5 +1,6 @@
 import socket
 import os
+import multiprocessing
 
 SERVER_IP = '127.0.0.1'
 SERVER_PORT = 12345
@@ -70,9 +71,12 @@ def start_server():
         while True:
             client_socket, addr = server_socket.accept()
             print(f"Accepted connection from {addr}")
+            ## O cliente deve se conectar com o servidor no IP e porta determinados, e ambos devem sinalizar que a conexão foi estabelecida com sucesso
             client_socket.send(b'Connection established.')
-
-            handle_client(client_socket)
+            #servidor suportar mais de uma conexão e operação simultânea de clientes
+            client_handler = multiprocessing.Process(target=handle_client, args=(client_socket,))
+            client_handler.start()
+            
     except KeyboardInterrupt:
         print("Server shutting down.")
     finally:
