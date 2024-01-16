@@ -62,7 +62,9 @@ def handle_client(client_socket):
         client_socket.close()
 
 def start_server():
+    #socket TCP
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    #Servidor deve abrir um socket para um endereço IP e porta fixos
     server_socket.bind((SERVER_IP, SERVER_PORT))
     server_socket.listen(5)
     print(f"Server listening on {SERVER_IP}:{SERVER_PORT}")
@@ -76,7 +78,7 @@ def start_server():
             #servidor suportar mais de uma conexão e operação simultânea de clientes
             client_handler = multiprocessing.Process(target=handle_client, args=(client_socket,))
             client_handler.start()
-            
+
     except KeyboardInterrupt:
         print("Server shutting down.")
     finally:
