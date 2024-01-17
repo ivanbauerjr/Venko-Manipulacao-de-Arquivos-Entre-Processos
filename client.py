@@ -1,7 +1,7 @@
 import socket
 import os
 
-SERVER_IP = '127.0.0.1'
+SERVER_IP = '192.168.56.1'
 SERVER_PORT = 12345
 BUFFER_SIZE = 1024
 CLIENT_DIR = './client_files/'
@@ -45,11 +45,17 @@ def download_file(client_socket, filename, destination_folder):
                 print(data)
                 if not data:
                     # Todos os dados foram recebidos
+                    print('Todos os dados foram recebidos...')
                     break
-                file.write(data)
+                
                 if data.endswith(b"__end_of_file__"):
+                    #não escreve '__end_of_file__' no arquivo
+                    data = data[:-len(b"__end_of_file__")]
                     print('...Todos os dados foram recebidos...')
+                    file.write(data)
                     break
+
+                file.write(data)
         print(f"Download do arquivo '{filename}' concluído. Salvo em '{destination_folder}'.")
 
     except Exception as e:

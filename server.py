@@ -2,7 +2,7 @@ import socket
 import os
 import multiprocessing
 
-SERVER_IP = '127.0.0.1'
+SERVER_IP = '192.168.56.1'
 SERVER_PORT = 12345
 BUFFER_SIZE = 1024
 BASE_DIR = './server_files/'
@@ -121,12 +121,17 @@ def upload_file(client_socket, filename):
                 print(data)
                 if not data:
                     # Todos os dados foram recebidos
-                    print('...Todos os dados foram recebidos...')
+                    print('Todos os dados foram recebidos...')
                     break
-                file.write(data)
+                
                 if data.endswith(b"__end_of_file__"):
+                    #não escreve '__end_of_file__' no arquivo
+                    data = data[:-len(b"__end_of_file__")]
                     print('...Todos os dados foram recebidos...')
+                    file.write(data)
                     break
+
+                file.write(data)
 
         print(f"Upload do arquivo '{filename}' concluído.")
 
