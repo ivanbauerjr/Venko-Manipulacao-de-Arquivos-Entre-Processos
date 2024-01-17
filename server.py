@@ -22,8 +22,11 @@ def start_server():
             ## O cliente deve se conectar com o servidor no IP e porta determinados, e ambos devem sinalizar que a conexão foi estabelecida com sucesso
             client_socket.send(b'Connection established.')
             #servidor suportar mais de uma conexão e operação simultânea de clientes
-            client_handler = multiprocessing.Process(target=handle_client, args=(client_socket,))
-            client_handler.start()
+            #client_handler = multiprocessing.Process(target=handle_client, args=(client_socket,))
+            #client_handler.start()
+
+            #inicialmente testando com apenas um client
+            handle_client(client_socket)
 
     except KeyboardInterrupt:
         print("Server shutting down.")
@@ -58,6 +61,7 @@ def handle_client(client_socket):
                 #client_socket.send(response.encode())
 
             else:
+                print(f"Invalid request: {request}")
                 response = 'Invalid request.'
     except Exception as e:
         print(f"Error: {e}")
@@ -100,14 +104,19 @@ def download_file(client_socket, filename):
 
 #usado para receber o arquivo do cliente
 def upload_file(client_socket, filename):
+    print(f"Recebendo arquivo '{filename}'...")
     file_path = os.path.join(BASE_DIR, filename)
     try:
         # Abre o arquivo no modo de escrita binária
         with open(file_path, 'wb') as file:
+            # Recebe os dados do arquivo em blocos
+            print('Recebendo dados...')
             while True:
+                print('...Recebendo dados...')
                 data = client_socket.recv(BUFFER_SIZE)
                 if not data:
                     # Todos os dados foram recebidos
+                    print('...Todos os dados foram recebidos...')
                     break
                 file.write(data)
 

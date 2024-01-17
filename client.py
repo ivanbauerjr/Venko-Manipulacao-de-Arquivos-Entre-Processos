@@ -32,7 +32,7 @@ def delete_file(client_socket, filename):
 #O cliente deve poder fazer um download de algum arquivo do servidor
 def download_file(client_socket, filename, destination_folder):
     # Envia o comando de download ao servidor
-    send_request(client_socket, f'DOWNLOAD {filename}')
+    client_socket.send(f'DOWNLOAD {filename}'.encode())
     try:
         # Cria o caminho completo para o arquivo de destino
         file_path = os.path.join(destination_folder, filename)
@@ -57,15 +57,16 @@ def download_file(client_socket, filename, destination_folder):
 def upload_file(client_socket, filename, source_folder):
     file_path = os.path.join(source_folder, filename)
     # Envia o comando de upload
-    print(f'{file_path}')
-    send_request(client_socket, f'UPLOAD {filename}')
-    
+    if os.path.exists(file_path):
+        print(f'File exists: {file_path}')
+    else:
+        print(f'File does not exist: {file_path}')
+    client_socket.send(f'UPLOAD {filename}'.encode())
     try:
         # Abre o arquivo em modo binário
         with open(file_path, 'rb') as file:
             # Lê e envia os dados do arquivo em blocos
             while True:
-                print("teste")
                 data = file.read(BUFFER_SIZE)
                 print(data)
                 if not data:
