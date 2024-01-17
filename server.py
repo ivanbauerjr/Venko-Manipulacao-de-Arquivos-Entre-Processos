@@ -1,6 +1,6 @@
 import socket
 import os
-import multiprocessing
+import threading
 
 SERVER_IP = '192.168.56.1'
 SERVER_PORT = 12345
@@ -21,12 +21,12 @@ def start_server():
             print(f"Accepted connection from {addr}")
             ## O cliente deve se conectar com o servidor no IP e porta determinados, e ambos devem sinalizar que a conexão foi estabelecida com sucesso
             client_socket.send(b'Connection established.')
-            #servidor suportar mais de uma conexão e operação simultânea de clientes
-            #client_handler = multiprocessing.Process(target=handle_client, args=(client_socket,))
-            #client_handler.start()
+            #servidor deve suportar mais de uma conexão e operação simultânea de clientes
+            #utilizando multithreading
+            threading.Thread(target=handle_client, args=(client_socket,)).start()
 
             #inicialmente testando com apenas um client
-            handle_client(client_socket)
+            #handle_client(client_socket)
 
     except KeyboardInterrupt:
         print("Server shutting down.")
@@ -52,13 +52,9 @@ def handle_client(client_socket):
             elif request.startswith('DOWNLOAD'):
                 _, filename = request.split(maxsplit=2)
                 download_file(client_socket, filename)
-                #response = download_file(client_socket, filename)
-                #client_socket.send(response.encode())
             elif request.startswith('UPLOAD'):
                 _, filename = request.split(maxsplit=2)
                 upload_file(client_socket, filename)
-                #response = upload_file(client_socket, filename, data.encode())
-                #client_socket.send(response.encode())
 
             else:
                 print(f"Invalid request: {request}")
@@ -99,44 +95,44 @@ def download_file(client_socket, filename):
         # Indicar ao cliente que a transmissão está completa
         client_socket.send(b"__end_of_file__")
 
-        print(f"Download do arquivo '{filename}' concluído.")
+        print(f"Download of '{filename}' completed.")
 
     except FileNotFoundError:
-        print(f"Arquivo '{filename}' não encontrado.")        
+        print(f"File '{filename}' not found.")        
     except Exception as e:
-        print(f"Erro durante o download do arquivo '{filename}': {str(e)}")
+        print(f"Error during download of file '{filename}': {str(e)}")
 
 #usado para receber o arquivo do cliente
 def upload_file(client_socket, filename):
-    print(f"Recebendo arquivo '{filename}'...")
+    print(f"Receiving file '{filename}'...")
     file_path = os.path.join(BASE_DIR, filename)
     try:
         # Abre o arquivo no modo de escrita binária
         with open(file_path, 'wb') as file:
             # Recebe os dados do arquivo em blocos
-            print('Recebendo dados...')
+            print('Receiving data...')
             while True:
-                print('...Recebendo dados...')
+                print('...Receiving data...')
                 data = client_socket.recv(BUFFER_SIZE)
                 print(data)
                 if not data:
                     # Todos os dados foram recebidos
-                    print('Todos os dados foram recebidos...')
+                    print('All data has been received...')
                     break
                 
                 if data.endswith(b"__end_of_file__"):
                     #não escreve '__end_of_file__' no arquivo
                     data = data[:-len(b"__end_of_file__")]
-                    print('...Todos os dados foram recebidos...')
+                    print('...All data has been received...')
                     file.write(data)
                     break
 
                 file.write(data)
 
-        print(f"Upload do arquivo '{filename}' concluído.")
+        print(f"Upload of file '{filename}' completed.")
 
     except Exception as e:
-        print(f"Erro durante o upload do arquivo '{filename}': {str(e)}")
+        print(f"Error during upload of file '{filename}': {str(e)}")
 
 
 if __name__ == "__main__":

@@ -36,28 +36,28 @@ def download_file(client_socket, filename, destination_folder):
     try:
         # Recebe os dados do servidor em blocos e escreve no arquivo local
         with open(file_path, 'wb') as file:
-            print('Recebendo dados...')
+            print('Receiving data...')
             while True:
-                print('...Recebendo dados...')
+                print('...Receiving data...')
                 data = client_socket.recv(BUFFER_SIZE)
                 print(data)
                 if not data:
                     # Todos os dados foram recebidos
-                    print('Todos os dados foram recebidos...')
+                    print('All data has been received...')
                     break
                 
                 if data.endswith(b"__end_of_file__"):
                     #não escreve '__end_of_file__' no arquivo
                     data = data[:-len(b"__end_of_file__")]
-                    print('...Todos os dados foram recebidos...')
+                    print('...All data has been received...')
                     file.write(data)
                     break
 
                 file.write(data)
-        print(f"Download do arquivo '{filename}' concluído. Salvo em '{destination_folder}'.")
+        print(f"Download of file '{filename}' completed. Saved in '{destination_folder}'.")
 
     except Exception as e:
-        print(f"Erro durante o download do arquivo '{filename}': {str(e)}")
+        print(f"Error during download of file '{filename}': {str(e)}")
 
 
 
@@ -86,9 +86,9 @@ def upload_file(client_socket, filename, source_folder):
         client_socket.send(b"__end_of_file__")
 
     except FileNotFoundError:
-        print(f"Arquivo '{filename}' não encontrado.")
+        print(f"File '{filename}' not found.")
     except Exception as e:
-        print(f"Erro durante o upload do arquivo '{filename}': {str(e)}")
+        print(f"Error during download of file '{filename}': {str(e)}")
 
 def run_command(client_socket, command):
     if command == 'list':
