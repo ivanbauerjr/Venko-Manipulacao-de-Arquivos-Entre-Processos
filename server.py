@@ -50,12 +50,12 @@ def handle_client(client_socket):
                 response = delete_file(filename)
                 client_socket.send(response.encode())
             elif request.startswith('DOWNLOAD'):
-                _, filename = request.split()
+                _, filename = request.split(maxsplit=2)
                 download_file(client_socket, filename)
                 #response = download_file(client_socket, filename)
                 #client_socket.send(response.encode())
             elif request.startswith('UPLOAD'):
-                _, filename = request.split()
+                _, filename = request.split(maxsplit=2)
                 upload_file(client_socket, filename)
                 #response = upload_file(client_socket, filename, data.encode())
                 #client_socket.send(response.encode())
@@ -114,11 +114,15 @@ def upload_file(client_socket, filename):
             while True:
                 print('...Recebendo dados...')
                 data = client_socket.recv(BUFFER_SIZE)
+                print(data)
                 if not data:
                     # Todos os dados foram recebidos
                     print('...Todos os dados foram recebidos...')
                     break
                 file.write(data)
+                if data.endswith(b"__end_of_file__"):
+                    print('...Todos os dados foram recebidos...')
+                    break
 
         print(f"Upload do arquivo '{filename}' concluído.")
 

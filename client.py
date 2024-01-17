@@ -75,7 +75,7 @@ def upload_file(client_socket, filename, source_folder):
                 client_socket.send(data)
         
         # Indicar ao servidor que a transmissão está completa
-        #client_socket.send(b"__end_of_file__")
+        client_socket.send(b"__end_of_file__")
 
     except FileNotFoundError:
         print(f"Arquivo '{filename}' não encontrado.")
