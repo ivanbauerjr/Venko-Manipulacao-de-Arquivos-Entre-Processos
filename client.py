@@ -11,9 +11,7 @@ def establish_connection():
     client_socket.connect((SERVER_IP, SERVER_PORT))
     # O cliente deve se conectar com o servidor no IP e porta determinados, e ambos devem sinalizar que a conexão foi estabelecida com sucesso
     print("Connection established with the server.")
-    client_socket.send(''.encode())
-    response = client_socket.recv(BUFFER_SIZE).decode()
-    print(response)
+    send_request(client_socket, '')
     return client_socket
 
 def send_request(client_socket, request):
