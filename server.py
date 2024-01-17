@@ -34,7 +34,8 @@ def handle_client(client_socket):
     try:
         while True:
             request = client_socket.recv(BUFFER_SIZE).decode()
-
+            print("Request:")
+            print(request)
             if not request:
                 break
 
@@ -47,10 +48,14 @@ def handle_client(client_socket):
                 client_socket.send(response.encode())
             elif request.startswith('DOWNLOAD'):
                 _, filename = request.split()
-                response = download_file(client_socket, filename)
+                download_file(client_socket, filename)
+                #response = download_file(client_socket, filename)
+                #client_socket.send(response.encode())
             elif request.startswith('UPLOAD'):
-                _, filename, data = request.split(maxsplit=2)
-                response = upload_file(client_socket, filename, data.encode())
+                _, filename = request.split()
+                upload_file(client_socket, filename)
+                #response = upload_file(client_socket, filename, data.encode())
+                #client_socket.send(response.encode())
 
             else:
                 response = 'Invalid request.'
@@ -82,12 +87,17 @@ def download_file(client_socket, filename):
                     break
                 client_socket.send(data)
 
+        # Indicar ao cliente que a transmissão está completa
+        client_socket.send(b"__end_of_file__")
+
         print(f"Download do arquivo '{filename}' concluído.")
 
+    except FileNotFoundError:
+        print(f"Arquivo '{filename}' não encontrado.")        
     except Exception as e:
         print(f"Erro durante o download do arquivo '{filename}': {str(e)}")
 
-def upload_file(client_socket, filename, data):
+def upload_file(client_socket, filename):
     file_path = os.path.join(BASE_DIR, filename)
     try:
         # Abre o arquivo no modo de escrita binária
@@ -103,8 +113,6 @@ def upload_file(client_socket, filename, data):
 
     except Exception as e:
         print(f"Erro durante o upload do arquivo '{filename}': {str(e)}")
-
-
 
 
 if __name__ == "__main__":

@@ -25,12 +25,15 @@ def send_request(client_socket, request):
 def list_files(client_socket):
     send_request(client_socket, 'LIST')
 
+#O cliente deve poder deletar algum arquivo no servidor
+def delete_file(client_socket, filename):
+    send_request(client_socket, f'DELETE {filename}')
+
 #O cliente deve poder fazer um download de algum arquivo do servidor
 def download_file(client_socket, filename, destination_folder):
+    # Envia o comando de download ao servidor
+    send_request(client_socket, f'DOWNLOAD {filename}')
     try:
-        # Envia o comando de download ao servidor
-        send_request(client_socket, f'DOWNLOAD {filename}')
-        
         # Cria o caminho completo para o arquivo de destino
         file_path = os.path.join(destination_folder, filename)
 
@@ -48,31 +51,29 @@ def download_file(client_socket, filename, destination_folder):
     except Exception as e:
         print(f"Erro durante o download do arquivo '{filename}': {str(e)}")
 
-#O cliente deve poder deletar algum arquivo no servidor
-def delete_file(client_socket, filename):
-    send_request(client_socket, f'DELETE {filename}')
-    response = client_socket.recv(BUFFER_SIZE)
-    print(response.decode())
+
 
 #O cliente deve poder fazer upload de algum arquivo para o servidor
-def upload_file(client_socket, filename):
+def upload_file(client_socket, filename, source_folder):
+    file_path = os.path.join(source_folder, filename)
+    # Envia o comando de upload
+    send_request(client_socket, f'UPLOAD {filename}')
     try:
         # Abre o arquivo em modo binário
-        with open(filename, 'rb') as file:
-            # Envia o comando de upload
-            send_request(client_socket, f'UPLOAD {filename}')
+        with open(file_path, 'rb') as file:
+
             
             # Lê e envia os dados do arquivo em blocos
             while True:
                 data = file.read(BUFFER_SIZE)
+                print(data)
                 if not data:
                     # Todos os dados foram lidos
                     break
                 client_socket.send(data)
-                
-            # Agora, espera pela resposta do servidor
-            response = client_socket.recv(BUFFER_SIZE)
-            print(response.decode())
+        
+        # Indicar ao servidor que a transmissão está completa
+        client_socket.send(b"__end_of_file__")
 
     except FileNotFoundError:
         print(f"Arquivo '{filename}' não encontrado.")
@@ -80,21 +81,20 @@ def upload_file(client_socket, filename):
         print(f"Erro durante o upload do arquivo '{filename}': {str(e)}")
 
 def run_command(client_socket, command):
-    if command == 'download':
-        filename = input('Filename: ')
-        download_file(client_socket, filename, CLIENT_DIR)
-
-    elif command == 'upload':
-        filename = input('Filename: ')
-        upload_file(client_socket, filename)
+    if command == 'list':
+        list_files(client_socket)
 
     elif command == 'delete':
         filename = input('Filename: ')
         delete_file(client_socket, filename)
 
-    elif command == 'list':
-        list_files(client_socket)
+    elif command == 'download':
+        filename = input('Filename: ')
+        download_file(client_socket, filename, CLIENT_DIR)
 
+    elif command == 'upload':
+        filename = input('Filename: ')
+        upload_file(client_socket, filename, CLIENT_DIR)
 
     else:
         print('Invalid command.')
