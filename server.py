@@ -76,6 +76,7 @@ def delete_file(filename):
     else:
         return 'File not found.'
 
+#usado para enviar o arquivo para o cliente
 def download_file(client_socket, filename):
     filepath = os.path.join(BASE_DIR, filename)
     try:
@@ -97,6 +98,7 @@ def download_file(client_socket, filename):
     except Exception as e:
         print(f"Erro durante o download do arquivo '{filename}': {str(e)}")
 
+#usado para receber o arquivo do cliente
 def upload_file(client_socket, filename):
     file_path = os.path.join(BASE_DIR, filename)
     try:

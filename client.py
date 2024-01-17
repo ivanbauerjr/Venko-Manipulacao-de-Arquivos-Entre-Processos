@@ -57,14 +57,15 @@ def download_file(client_socket, filename, destination_folder):
 def upload_file(client_socket, filename, source_folder):
     file_path = os.path.join(source_folder, filename)
     # Envia o comando de upload
+    print(f'{file_path}')
     send_request(client_socket, f'UPLOAD {filename}')
+    
     try:
         # Abre o arquivo em modo binário
         with open(file_path, 'rb') as file:
-
-            
             # Lê e envia os dados do arquivo em blocos
             while True:
+                print("teste")
                 data = file.read(BUFFER_SIZE)
                 print(data)
                 if not data:
@@ -73,7 +74,7 @@ def upload_file(client_socket, filename, source_folder):
                 client_socket.send(data)
         
         # Indicar ao servidor que a transmissão está completa
-        client_socket.send(b"__end_of_file__")
+        #client_socket.send(b"__end_of_file__")
 
     except FileNotFoundError:
         print(f"Arquivo '{filename}' não encontrado.")
