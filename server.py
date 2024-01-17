@@ -82,9 +82,13 @@ def delete_file(filename):
 
 #usado para enviar o arquivo para o cliente
 def download_file(client_socket, filename):
-    filepath = os.path.join(BASE_DIR, filename)
+    file_path = os.path.join(BASE_DIR, filename)
+    if os.path.exists(file_path):
+        print(f'File exists: {file_path}')
+    else:
+        print(f'File does not exist: {file_path}')
     try:
-        with open(filepath, 'rb') as file:
+        with open(file_path, 'rb') as file:
             while True:
                 data = file.read(BUFFER_SIZE)
                 if not data:

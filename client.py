@@ -33,19 +33,23 @@ def delete_file(client_socket, filename):
 def download_file(client_socket, filename, destination_folder):
     # Envia o comando de download ao servidor
     client_socket.send(f'DOWNLOAD {filename}'.encode())
+    # Cria o caminho completo para o arquivo de destino
+    file_path = os.path.join(destination_folder, filename)
     try:
-        # Cria o caminho completo para o arquivo de destino
-        file_path = os.path.join(destination_folder, filename)
-
         # Recebe os dados do servidor em blocos e escreve no arquivo local
         with open(file_path, 'wb') as file:
+            print('Recebendo dados...')
             while True:
+                print('...Recebendo dados...')
                 data = client_socket.recv(BUFFER_SIZE)
+                print(data)
                 if not data:
                     # Todos os dados foram recebidos
                     break
                 file.write(data)
-
+                if data.endswith(b"__end_of_file__"):
+                    print('...Todos os dados foram recebidos...')
+                    break
         print(f"Download do arquivo '{filename}' concluído. Salvo em '{destination_folder}'.")
 
     except Exception as e:
