@@ -7,60 +7,6 @@ SERVER_PORT = 12345
 BUFFER_SIZE = 1024
 BASE_DIR = './server_files/'
 
-def list_files():
-    files = os.listdir(BASE_DIR)
-    return '\n'.join(files)
-
-def download_file(filename):
-    filepath = os.path.join(BASE_DIR, filename)
-    if os.path.exists(filepath):
-        with open(filepath, 'rb') as file:
-            return file.read()
-    else:
-        return b'File not found.'
-
-def upload_file(filename, data):
-    filepath = os.path.join(BASE_DIR, filename)
-    with open(filepath, 'wb') as file:
-        file.write(data)
-    return 'File uploaded successfully.'
-
-def delete_file(filename):
-    filepath = os.path.join(BASE_DIR, filename)
-    if os.path.exists(filepath):
-        os.remove(filepath)
-        return 'File deleted successfully.'
-    else:
-        return 'File not found.'
-
-def handle_client(client_socket):
-    try:
-        while True:
-            request = client_socket.recv(BUFFER_SIZE).decode()
-
-            if not request:
-                break
-
-            if request == 'LIST':
-                response = list_files()
-            elif request.startswith('DOWNLOAD'):
-                _, filename = request.split()
-                response = download_file(filename)
-            elif request.startswith('UPLOAD'):
-                _, filename, data = request.split(maxsplit=2)
-                response = upload_file(filename, data.encode())
-            elif request.startswith('DELETE'):
-                _, filename = request.split()
-                response = delete_file(filename)
-            else:
-                response = 'Invalid request.'
-
-            client_socket.send(response.encode())
-    except Exception as e:
-        print(f"Error: {e}")
-    finally:
-        client_socket.close()
-
 def start_server():
     #socket TCP
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -83,6 +29,83 @@ def start_server():
         print("Server shutting down.")
     finally:
         server_socket.close()
+
+def handle_client(client_socket):
+    try:
+        while True:
+            request = client_socket.recv(BUFFER_SIZE).decode()
+
+            if not request:
+                break
+
+            if request == 'LIST':
+                response = list_files()
+                client_socket.send(response.encode())
+            elif request.startswith('DELETE'):
+                _, filename = request.split()
+                response = delete_file(filename)
+                client_socket.send(response.encode())
+            elif request.startswith('DOWNLOAD'):
+                _, filename = request.split()
+                response = download_file(client_socket, filename)
+            elif request.startswith('UPLOAD'):
+                _, filename, data = request.split(maxsplit=2)
+                response = upload_file(client_socket, filename, data.encode())
+
+            else:
+                response = 'Invalid request.'
+    except Exception as e:
+        print(f"Error: {e}")
+    finally:
+        client_socket.close()
+
+def list_files():
+    files = os.listdir(BASE_DIR)
+    return '\n'.join(files)
+
+def delete_file(filename):
+    filepath = os.path.join(BASE_DIR, filename)
+    if os.path.exists(filepath):
+        os.remove(filepath)
+        return 'File deleted successfully.'
+    else:
+        return 'File not found.'
+
+def download_file(client_socket, filename):
+    filepath = os.path.join(BASE_DIR, filename)
+    try:
+        with open(filepath, 'rb') as file:
+            while True:
+                data = file.read(BUFFER_SIZE)
+                if not data:
+                    # Todos os dados foram lidos
+                    break
+                client_socket.send(data)
+
+        print(f"Download do arquivo '{filename}' concluído.")
+
+    except Exception as e:
+        print(f"Erro durante o download do arquivo '{filename}': {str(e)}")
+
+def upload_file(client_socket, filename, data):
+    file_path = os.path.join(BASE_DIR, filename)
+    try:
+        # Abre o arquivo no modo de escrita binária
+        with open(file_path, 'wb') as file:
+            while True:
+                data = client_socket.recv(BUFFER_SIZE)
+                if not data:
+                    # Todos os dados foram recebidos
+                    break
+                file.write(data)
+
+        print(f"Upload do arquivo '{filename}' concluído.")
+
+    except Exception as e:
+        print(f"Erro durante o upload do arquivo '{filename}': {str(e)}")
+
+
+
 
 if __name__ == "__main__":
     start_server()

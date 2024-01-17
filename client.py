@@ -1,14 +1,19 @@
 import socket
+import os
 
 SERVER_IP = '127.0.0.1'
 SERVER_PORT = 12345
 BUFFER_SIZE = 1024
+CLIENT_DIR = './client_files/'
 
 def establish_connection():
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     client_socket.connect((SERVER_IP, SERVER_PORT))
     # O cliente deve se conectar com o servidor no IP e porta determinados, e ambos devem sinalizar que a conexão foi estabelecida com sucesso
     print("Connection established with the server.")
+    client_socket.send(''.encode())
+    response = client_socket.recv(BUFFER_SIZE).decode()
+    print(response)
     return client_socket
 
 def send_request(client_socket, request):
@@ -21,10 +26,27 @@ def list_files(client_socket):
     send_request(client_socket, 'LIST')
 
 #O cliente deve poder fazer um download de algum arquivo do servidor
-def download_file(client_socket, filename):
-    send_request(client_socket, f'DOWNLOAD {filename}')
-    response = client_socket.recv(BUFFER_SIZE)
-    print(response.decode())
+def download_file(client_socket, filename, destination_folder):
+    try:
+        # Envia o comando de download ao servidor
+        send_request(client_socket, f'DOWNLOAD {filename}')
+        
+        # Cria o caminho completo para o arquivo de destino
+        file_path = os.path.join(destination_folder, filename)
+
+        # Recebe os dados do servidor em blocos e escreve no arquivo local
+        with open(file_path, 'wb') as file:
+            while True:
+                data = client_socket.recv(BUFFER_SIZE)
+                if not data:
+                    # Todos os dados foram recebidos
+                    break
+                file.write(data)
+
+        print(f"Download do arquivo '{filename}' concluído. Salvo em '{destination_folder}'.")
+
+    except Exception as e:
+        print(f"Erro durante o download do arquivo '{filename}': {str(e)}")
 
 #O cliente deve poder deletar algum arquivo no servidor
 def delete_file(client_socket, filename):
@@ -33,20 +55,38 @@ def delete_file(client_socket, filename):
     print(response.decode())
 
 #O cliente deve poder fazer upload de algum arquivo para o servidor
-def upload_file(client_socket, filename, data):
-    send_request(client_socket, f'UPLOAD {filename} {data}')
-    response = client_socket.recv(BUFFER_SIZE)
-    print(response.decode())
+def upload_file(client_socket, filename):
+    try:
+        # Abre o arquivo em modo binário
+        with open(filename, 'rb') as file:
+            # Envia o comando de upload
+            send_request(client_socket, f'UPLOAD {filename}')
+            
+            # Lê e envia os dados do arquivo em blocos
+            while True:
+                data = file.read(BUFFER_SIZE)
+                if not data:
+                    # Todos os dados foram lidos
+                    break
+                client_socket.send(data)
+                
+            # Agora, espera pela resposta do servidor
+            response = client_socket.recv(BUFFER_SIZE)
+            print(response.decode())
+
+    except FileNotFoundError:
+        print(f"Arquivo '{filename}' não encontrado.")
+    except Exception as e:
+        print(f"Erro durante o upload do arquivo '{filename}': {str(e)}")
 
 def run_command(client_socket, command):
     if command == 'download':
         filename = input('Filename: ')
-        download_file(client_socket, filename)
+        download_file(client_socket, filename, CLIENT_DIR)
 
     elif command == 'upload':
         filename = input('Filename: ')
-        data = input('Data: ')
-        upload_file(client_socket, filename, data)
+        upload_file(client_socket, filename)
 
     elif command == 'delete':
         filename = input('Filename: ')
@@ -61,7 +101,7 @@ def run_command(client_socket, command):
     
 def main():
     client_socket = establish_connection()
-
+    
     while True:
         #se a conexão for fechada, sair do loop
         if not client_socket:
