@@ -25,9 +25,6 @@ def start_server():
             #utilizando multithreading
             threading.Thread(target=handle_client, args=(client_socket,)).start()
 
-            #inicialmente testando com apenas um client
-            #handle_client(client_socket)
-
     except KeyboardInterrupt:
         print("Server shutting down.")
     finally:
@@ -37,23 +34,24 @@ def handle_client(client_socket):
     try:
         while True:
             request = client_socket.recv(BUFFER_SIZE).decode()
-            print("Request:")
-            print(request)
             if not request:
                 break
+            print("Request:")
+            print(request)
+
 
             if request == 'LIST':
                 response = list_files()
                 client_socket.send(response.encode())
             elif request.startswith('DELETE'):
-                _, filename = request.split()
+                _, filename = request.split(maxsplit=1)
                 response = delete_file(filename)
                 client_socket.send(response.encode())
             elif request.startswith('DOWNLOAD'):
-                _, filename = request.split(maxsplit=2)
+                _, filename = request.split(maxsplit=1)
                 send_file(client_socket, filename)
             elif request.startswith('UPLOAD'):
-                _, filename = request.split(maxsplit=2)
+                _, filename = request.split(maxsplit=1)
                 receive_file(client_socket, filename)
 
             else:
@@ -76,7 +74,7 @@ def delete_file(filename):
     else:
         return 'File not found.'
 
-#usado para enviar o arquivo para o cliente
+#usado para enviar o arquivo para o cliente, quando o cliente requisita download
 def send_file(client_socket, filename):
     file_path = os.path.join(BASE_DIR, filename)
     if os.path.exists(file_path):
@@ -102,7 +100,7 @@ def send_file(client_socket, filename):
     except Exception as e:
         print(f"Error during download of file '{filename}': {str(e)}")
 
-#usado para receber o arquivo do cliente
+#usado para receber o arquivo do cliente, quando o cliente requisita upload
 def receive_file(client_socket, filename):
     print(f"Receiving file '{filename}'...")
     file_path = os.path.join(BASE_DIR, filename)
