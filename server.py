@@ -51,10 +51,10 @@ def handle_client(client_socket):
                 client_socket.send(response.encode())
             elif request.startswith('DOWNLOAD'):
                 _, filename = request.split(maxsplit=2)
-                download_file(client_socket, filename)
+                send_file(client_socket, filename)
             elif request.startswith('UPLOAD'):
                 _, filename = request.split(maxsplit=2)
-                upload_file(client_socket, filename)
+                receive_file(client_socket, filename)
 
             else:
                 print(f"Invalid request: {request}")
@@ -77,7 +77,7 @@ def delete_file(filename):
         return 'File not found.'
 
 #usado para enviar o arquivo para o cliente
-def download_file(client_socket, filename):
+def send_file(client_socket, filename):
     file_path = os.path.join(BASE_DIR, filename)
     if os.path.exists(file_path):
         print(f'File exists: {file_path}')
@@ -103,7 +103,7 @@ def download_file(client_socket, filename):
         print(f"Error during download of file '{filename}': {str(e)}")
 
 #usado para receber o arquivo do cliente
-def upload_file(client_socket, filename):
+def receive_file(client_socket, filename):
     print(f"Receiving file '{filename}'...")
     file_path = os.path.join(BASE_DIR, filename)
     try:
