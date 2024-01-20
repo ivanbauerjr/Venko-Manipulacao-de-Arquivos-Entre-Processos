@@ -1,5 +1,6 @@
 import socket
 import os
+import json
 
 SERVER_IP = '192.168.56.1'
 SERVER_PORT = 12345
@@ -10,27 +11,48 @@ def establish_connection():
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     client_socket.connect((SERVER_IP, SERVER_PORT))
     # O cliente deve se conectar com o servidor no IP e porta determinados, e ambos devem sinalizar que a conexão foi estabelecida com sucesso
-    print("Connection established with the server.")
-    send_request(client_socket, '')
-    return client_socket
-
-def send_request(client_socket, request):
-    client_socket.send(request.encode())
+    request = {'tipo_requisicao': 'ESTABLISHING_CONNECTION'}
+    send_request(client_socket, request)
     response = client_socket.recv(BUFFER_SIZE).decode()
     print(response)
+    print("Client has connected with the server.")
+    return client_socket
+
+#Serializa os dados em JSON e envia ao servidor
+def send_request(client_socket, request):
+    json_data = json.dumps(request)
+    client_socket.send(json_data.encode())
 
 #O cliente deve poder fazer a listagem dos arquivos disponíveis no servidor
 def list_files(client_socket):
-    send_request(client_socket, 'LIST')
+    request = {'tipo_requisicao': 'LIST', 'nome_arquivo': ''}
+    send_request(client_socket, request)
+    response = client_socket.recv(BUFFER_SIZE).decode()
+    json_response = json.loads(response)
+    if 'files' in json_response and json_response['status'] == 'success':
+        # Itera sobre a lista de arquivos e imprime cada nome de arquivo em uma nova linha
+        for file_name in json_response['files']:
+            print(file_name)
+    else:
+        print('A resposta não contém a lista de arquivos ou o status não é sucesso.')
 
 #O cliente deve poder deletar algum arquivo no servidor
 def delete_file(client_socket, filename):
-    send_request(client_socket, f'DELETE {filename}')
+    send_request(client_socket, {'tipo_requisicao': 'DELETE', 'nome_arquivo': filename})
+    response = client_socket.recv(BUFFER_SIZE).decode()
+    print(response)
 
 #O cliente deve poder fazer um download de algum arquivo do servidor
 def download_file(client_socket, filename, destination_folder):
     # Envia o comando de download ao servidor
-    client_socket.send(f'DOWNLOAD {filename}'.encode())
+    send_request(client_socket, {'tipo_requisicao': 'DOWNLOAD', 'nome_arquivo': filename})
+    json_response = client_socket.recv(BUFFER_SIZE).decode()
+    response = json.loads(json_response)
+    status=response.get('status','')
+    message=response.get('message','')
+    if status == 'error':
+        print(f"Error during download of file '{filename}': {message}")
+        return
     # Cria o caminho completo para o arquivo de destino
     file_path = os.path.join(destination_folder, filename)
     try:
@@ -69,7 +91,10 @@ def upload_file(client_socket, filename, source_folder):
         print(f'File exists: {file_path}')
     else:
         print(f'File does not exist: {file_path}')
-    client_socket.send(f'UPLOAD {filename}'.encode())
+        return
+    send_request(client_socket, {'tipo_requisicao': 'UPLOAD', 'nome_arquivo': filename})
+    response = client_socket.recv(BUFFER_SIZE).decode()
+    print(response)
     try:
         # Abre o arquivo em modo binário
         with open(file_path, 'rb') as file:
