@@ -129,13 +129,13 @@ def delete_file(filename):
     filepath = os.path.join(BASE_DIR, filename)
     if os.path.exists(filepath):
         os.remove(filepath)
-        # Retorna um dicionário indicando que o arquivo foi excluído com sucesso
+        # Retorna indicando que o arquivo foi excluído com sucesso
         return {'status': 'success', 'message': 'File deleted successfully.'}
     else:
-        # Retorna um dicionário indicando que o arquivo não foi encontrado
+        # Retorna indicando que o arquivo não foi encontrado
         return {'status': 'error', 'message': 'File not found.'}
 
-#usado para enviar o arquivo para o cliente, quando o cliente requisita download
+# Utilizado para enviar o arquivo para o cliente, quando o cliente requisita download
 def send_file(client_socket, filename):
     file_path = os.path.join(BASE_DIR, filename)
     response = {'status': '', 'message': ''}
@@ -168,7 +168,7 @@ def send_file(client_socket, filename):
     except Exception as e:
         print(f"Error during transfer of file '{filename}': {str(e)}")
 
-#usado para receber o arquivo do cliente, quando o cliente requisita upload
+# Utilizado para receber o arquivo do cliente, quando o cliente requisita upload
 def receive_file(client_socket, filename):
     print(f"Receiving file '{filename}'...")
     file_path = os.path.join(BASE_DIR, filename)

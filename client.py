@@ -34,7 +34,7 @@ def list_files(client_socket):
         for file_name in json_response['files']:
             print(file_name)
     else:
-        print('A resposta não contém a lista de arquivos ou o status não é sucesso.')
+        print('The server directory does not contain any files.')
 
 #O cliente deve poder deletar algum arquivo no servidor
 def delete_file(client_socket, filename):
@@ -50,6 +50,7 @@ def download_file(client_socket, filename, destination_folder):
     response = json.loads(json_response)
     status=response.get('status','')
     message=response.get('message','')
+    print(json_response)
     if status == 'error':
         print(f"Error during download of file '{filename}': {message}")
         return
