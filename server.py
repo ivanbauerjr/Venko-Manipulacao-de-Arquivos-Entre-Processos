@@ -42,9 +42,8 @@ def handle_client(client_socket):
             request = client_socket.recv(BUFFER_SIZE).decode()
             if not request:
                 break
-            print("Request:")
-            print(request)
-
+            #print("Request:")
+            #print(request)
 
             if request == 'LIST':
                 response = list_files()
@@ -64,6 +63,7 @@ def handle_client(client_socket):
                 print(f"Invalid request: {request}")
                 response = 'Invalid request.'
             '''
+
             # Recebe a string JSON do cliente
             json_request = client_socket.recv(BUFFER_SIZE).decode()
 
@@ -118,6 +118,9 @@ def handle_client(client_socket):
 
 def list_files():
     files = os.listdir(BASE_DIR)
+    # Se a lista de arquivos estiver vazia, retorna uma mensagem de erro
+    if not files:
+        return {'status': 'error', 'message': 'No files found.'}
     # Retorna um dicionário contendo a lista de arquivos
     return {'status': 'success','files': files}
 
@@ -175,11 +178,11 @@ def receive_file(client_socket, filename):
         # Abre o arquivo no modo de escrita binária
         with open(file_path, 'wb') as file:
             # Recebe os dados do arquivo em blocos
-            print('Receiving data...')
+            #print('Receiving data...')
             while True:
-                print('...Receiving data...')
+                #print('...Receiving data...')
                 data = client_socket.recv(BUFFER_SIZE)
-                print(data)
+                #print(data)
                 if not data:
                     # Todos os dados foram recebidos
                     print('All data has been received...')
@@ -188,7 +191,7 @@ def receive_file(client_socket, filename):
                 if data.endswith(b"__end_of_file__"):
                     #não escreve '__end_of_file__' no arquivo
                     data = data[:-len(b"__end_of_file__")]
-                    print('...All data has been received...')
+                    #print('...All data has been received...')
                     file.write(data)
                     break
 

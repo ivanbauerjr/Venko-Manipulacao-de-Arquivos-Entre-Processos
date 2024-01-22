@@ -25,7 +25,7 @@ def send_request(client_socket, request):
 
 #O cliente deve poder fazer a listagem dos arquivos disponíveis no servidor
 def list_files(client_socket):
-    request = {'tipo_requisicao': 'LIST', 'nome_arquivo': ''}
+    request = {'tipo_requisicao': 'LIST'}
     send_request(client_socket, request)
     response = client_socket.recv(BUFFER_SIZE).decode()
     json_response = json.loads(response)
@@ -58,21 +58,21 @@ def download_file(client_socket, filename, destination_folder):
     try:
         # Recebe os dados do servidor em blocos e escreve no arquivo local
         with open(file_path, 'wb') as file:
-            print('Receiving data...')
+            #print('Receiving data...')
             while True:
-                print('...Receiving data...')
+                #print('...Receiving data...')
                 data = client_socket.recv(BUFFER_SIZE)
-                print(data)
+                #print(data)
                 if not data:
-                    # Todos os dados foram recebidos
-                    print('All data has been received...')
+                    #print('All data has been received...')
                     break
                 
                 if data.endswith(b"__end_of_file__"):
                     #não escreve '__end_of_file__' no arquivo
                     data = data[:-len(b"__end_of_file__")]
-                    print('...All data has been received...')
+                    #print('...All data has been received...')
                     file.write(data)
+                    # Todos os dados foram recebidos
                     break
 
                 file.write(data)
@@ -101,7 +101,7 @@ def upload_file(client_socket, filename, source_folder):
             # Lê e envia os dados do arquivo em blocos
             while True:
                 data = file.read(BUFFER_SIZE)
-                print(data)
+                #print(data)
                 if not data:
                     # Todos os dados foram lidos
                     break

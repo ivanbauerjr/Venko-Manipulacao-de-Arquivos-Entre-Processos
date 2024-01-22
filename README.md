@@ -1,6 +1,6 @@
 # Venko-Manipulacao-de-Arquivos-Entre-Processos
 
-O arquivo Documentação-Venko-Manipulacao-de-Arquivos-Entre-Processos.pdf, disponível no repositório, fornece a documentação do protocolo de comunicação entre cliente e servidor.
+O arquivo Documentação_Comunicação.pdf, disponível no repositório, fornece a documentação do protocolo de comunicação entre cliente e servidor.
 ____________
 
 Requisitos:
