@@ -2,6 +2,7 @@ import socket
 import os
 import threading
 import json
+import time
 
 SERVER_IP = '192.168.56.1'
 SERVER_PORT = 12345
@@ -138,18 +139,15 @@ def delete_file(filename):
 # Utilizado para enviar o arquivo para o cliente, quando o cliente requisita download
 def send_file(client_socket, filename):
     file_path = os.path.join(BASE_DIR, filename)
-    response = {'status': '', 'message': ''}
-
     if os.path.exists(file_path):
-        response['status'] = 'success'
-        response['message'] = 'File found. Transference started.'
         print(f'File exists: {file_path}')
-        client_socket.send(json.dumps(response).encode())
+        client_socket.send(json.dumps({'status': 'success', 'message': 'File found. Transference started.'}).encode())
+        # Adiciona um pequeno atraso para que o cliente possa receber a mensagem de sucesso antes de receber os dados
+        # Sem essa linha, ocorre um erro de desserialização no cliente quando múltiplos arquivos são baixados em sequência por clientes diferentes
+        time.sleep(0.1)
     else:
-        response['status'] = 'error'
-        response['message'] = 'File not found.'
         print(f'File does not exist: {file_path}')
-        client_socket.send(json.dumps(response).encode())
+        client_socket.send(json.dumps({'status': 'error', 'message': 'File not found.'}).encode())
         return
     try:
         with open(file_path, 'rb') as file:
