@@ -2,7 +2,7 @@
 
 O arquivo [Documentação_Comunicação.pdf](https://github.com/ivanbauerjr/Venko-Manipulacao-de-Arquivos-Entre-Processos/blob/main/Documenta%C3%A7%C3%A3o_Comunica%C3%A7%C3%A3o.pdf), disponível no repositório, fornece a documentação do protocolo de comunicação entre cliente e servidor.
 
-O arquivo [Plano de Teste_ Manipulacao-de-Arquivos-Entre-Processos.pdf], disponível no repositório, fornece a documentação do Plano de Teste que foi utilizado para testar as funcionaliades e requisitos do projeto.
+O arquivo [Plano de Teste_ Manipulacao-de-Arquivos-Entre-Processos.pdf](https://github.com/ivanbauerjr/Venko-Manipulacao-de-Arquivos-Entre-Processos/blob/main/Plano%20de%20Teste_%20Manipulacao-de-Arquivos-Entre-Processos.pdf), disponível no repositório, fornece a documentação do Plano de Teste que foi utilizado para testar as funcionaliades e requisitos do projeto.
 
 
 ____________
